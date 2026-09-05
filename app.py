@@ -11,7 +11,8 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 
-from tools import TICKETS, REVIEW_QUEUE, read_ticket, draft_reply
+from tools import TICKETS, read_ticket, draft_reply
+from permissions import REVIEW_QUEUE, get_review_queue
 from graph_memory import query_graph
 from verify import verify_draft
 from loop import triage_loop

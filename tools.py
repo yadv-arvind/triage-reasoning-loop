@@ -1,10 +1,14 @@
-"""tools.py — the harness's tools (its 'hands') and the permission gate.
+"""tools.py — the harness's tools (its 'hands').
 
-Module 1 (Harness Engineering): The concrete layer that gives the agent
-the ability to do things. Tools are the agent's HANDS. The REVIEW_QUEUE
-is the permission gate — drafts land here for a human. They are NEVER auto-sent.
+Module 1 (Harness Engineering - Layer 1: Tools):
+
+The concrete layer that gives the agent the ability to do things.
+Tools are the agent's HANDS — read tickets, search, find patterns, propose replies.
+
+Note: The permission gate (Layer 3) is in permissions.py
 """
 from langchain_core.tools import tool
+from permissions import queue_draft_for_review
 
 # In a real system these hit your DB / ticketing API. Hardcoded here for the demo.
 TICKETS = {
@@ -24,9 +28,6 @@ TICKETS = {
         "text": "Export to CSV button does nothing. Nothing shows up in logs either.",
     },
 }
-
-# The permission gate: drafts land here for a human. They are NEVER auto-sent.
-REVIEW_QUEUE = []
 
 
 @tool
@@ -51,6 +52,8 @@ def draft_reply(ticket_id: str, text: str) -> str:
     Use this once you have a good reply ready for a human to approve.
     This is the permission gate made concrete: the agent can propose, but only a
     human can actually send anything to the customer.
+
+    The actual permission gate logic is in permissions.py (Layer 3).
     """
-    REVIEW_QUEUE.append({"ticket_id": ticket_id, "draft": text})
+    result = queue_draft_for_review(ticket_id, text)
     return f"Draft queued for human review on {ticket_id}. It was NOT sent."
