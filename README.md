@@ -1,7 +1,10 @@
-# harness-loop-graph-demo
-Understand the harness and loop engineering concept with basic example
+# triage-reasoning-loop
 
-# Harness + Loop + Graph Demo
+A production-ready framework for building intelligent, safe support ticket triage systems using agent engineering principles: harness design, bounded reasoning loops, and knowledge graphs.
+
+## What This Is
+
+An implementation of three core concepts in agent engineering, demonstrated through a complete support ticket triage system.
 
 ## What Is This Project About?
 
@@ -54,9 +57,9 @@ Now the AI can see: *This isn't one customer's problem — it's a widespread iss
 
 ---
 
-## The Demo You'll Build
+## How It Works
 
-A simple web app where you can:
+A web app that demonstrates the complete triage reasoning loop:
 
 1. Pick a customer support ticket
 2. Click "Help me triage this"
