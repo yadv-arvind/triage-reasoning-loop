@@ -198,7 +198,7 @@ This transparency proves the system is auditable and working correctly.
 
 - **Understanding the ideas** — 1 day
 - **Building and running the demo** — 1-2 hours
-- **Showing it to your boss** — 10 minutes (plus the questions they'll ask!)
+- **Running the full demo** — 5-10 minutes
 
 ---
 
