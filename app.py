@@ -67,7 +67,7 @@ if st.button("Triage This Ticket", type="primary", use_container_width=True):
     # Step 3: Loop — draft, verify, revise
     with st.status("Step 3: Loop — draft → verify → revise", expanded=True):
         model = ChatAnthropic(
-            model="claude-opus-4-1",
+            model="claude-sonnet-5",
             temperature=0,
             api_key=os.getenv("ANTHROPIC_API_KEY"),
         )

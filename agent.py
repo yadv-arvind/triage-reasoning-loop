@@ -46,9 +46,9 @@ def build_agent():
     """
 
     # Layer 1: The MODEL — the brain we rent
-    # Using Claude Opus for power on this demo
+    # Using Claude Sonnet 5 for speed and cost on this demo
     model = ChatAnthropic(
-        model="claude-opus-4-1",  # Use current Claude model
+        model="claude-sonnet-5",  # Use current Claude model
         temperature=0,  # Deterministic outputs (no creativity in support replies)
         api_key=os.getenv("ANTHROPIC_API_KEY"),
     )
