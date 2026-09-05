@@ -105,26 +105,80 @@ From actual runs:
 - **Time per ticket:** 3-4 seconds total
 - **Safety:** Zero unauthorized customer contact (human-approved only)
 
+### Example Trace (What You'll See)
+
+When triaging **Ticket T-102** through the system:
+
+```
+Step 1: Agent reads ticket
+├─ Input: "Triage ticket T-102"
+├─ Tool call: read_ticket(T-102)
+└─ Output: "Customer: Beta LLC | Product: Billing API | Issue: Invoice API intermittently returns 500"
+
+Step 2: Agent queries graph
+├─ Tool call: find_connected_tickets(T-102)
+└─ Output: "T-102 caused by KI-7, which also affects: T-101 (Acme Corp), T-103 (Gamma Inc)"
+
+Step 3: Agent drafts reply
+├─ Prompt: "Draft a professional reply acknowledging this is known issue KI-7..."
+├─ Claude model: claude-sonnet-5
+└─ Draft: "We've identified the Billing API issue as KI-7, our known database timeout..."
+
+Step 4: Loop verifies
+├─ Check 1: Length >= 20 words? ✓ PASS (35 words)
+├─ Check 2: Mentions "Billing API"? ✓ PASS
+├─ Check 3: No over-promises? ✓ PASS
+└─ Result: APPROVED
+
+Step 5: Permission gate queues
+├─ Tool call: draft_reply(T-102, "We've identified...")
+└─ Output: "Draft queued for human review (NOT sent)"
+
+TRACE SUMMARY:
+├─ Total duration: 3.95s
+├─ Tokens used: 478 input, 89 output
+├─ Cost: $0.003236
+└─ Status: ✓ SUCCESS
+```
+
+**Key Insight:** The agent understood that T-102 wasn't isolated—it's part of a systemic issue (KI-7) affecting multiple customers. A human can now escalate this appropriately.
+
 ---
 
 ## Monitoring & Transparency
 
 Every run is tracked and visible:
 
-### What You Can See
-- **Each tool call** — Exactly what the AI read, found, and decided
-- **Every loop iteration** — Why drafts were rejected or accepted
-- **Graph queries** — Which related tickets were found
-- **Cost breakdown** — Token usage and pricing per ticket
+### What You Can See in LangSmith
 
-### How
-Open [LangSmith](https://smith.langchain.com) after running a demo to see:
-- Complete trace of every step
-- Time taken for each operation
-- Token cost for Claude API calls
-- Success/failure reasons
+**Tracing Dashboard** shows every run:
+```
+Run Name              Input              Output              Latency    Tokens   Cost
+────────────────────────────────────────────────────────────────────────────────────
+✓ draft_reply         T-102 draft...     Draft queued...     0.00s      —        —
+✓ ChatAnthropic       (prompt)           (response)          3.95s      478/89   $0.003
+✓ find_connected      T-102              (KI-7 results)      0.03s      —        —
+✓ read_ticket         T-102              (ticket details)    0.03s      —        —
+```
 
-This transparency proves the system is working and lets you audit every decision.
+**Detailed Trace View** for each run shows:
+- **Input:** Exactly what was sent to Claude
+- **Output:** Exactly what Claude responded with
+- **Latency:** How long it took (3.95s for the full response)
+- **Token cost:** Input tokens (478) + Output tokens (89) = Cost ($0.003)
+- **Tool calls:** Sequence of read → graph query → draft
+
+### How to Use It
+1. Run the demo: `streamlit run app.py`
+2. Triage a ticket in the UI
+3. Open [LangSmith](https://smith.langchain.com) in another tab
+4. Click on the trace to see:
+   - Each tool call (read_ticket, find_connected_tickets, draft_reply)
+   - What the model decided at each step
+   - Why loop accepted or rejected drafts
+   - Total cost for that ticket
+
+This transparency proves the system is auditable and working correctly.
 
 ---
 
