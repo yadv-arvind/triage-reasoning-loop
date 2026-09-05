@@ -49,7 +49,6 @@ def build_agent():
     # Using Claude Sonnet 5 for speed and cost on this demo
     model = ChatAnthropic(
         model="claude-sonnet-5",  # Use current Claude model
-        temperature=0,  # Deterministic outputs (no creativity in support replies)
         api_key=os.getenv("ANTHROPIC_API_KEY"),
     )
 
