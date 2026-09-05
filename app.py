@@ -14,6 +14,7 @@ from langchain_anthropic import ChatAnthropic
 from tools import TICKETS, REVIEW_QUEUE, read_ticket, draft_reply
 from graph_memory import query_graph
 from verify import verify_draft
+from loop import triage_loop
 
 # Load environment variables from .env file
 load_dotenv()
@@ -71,15 +72,8 @@ if st.button("Triage This Ticket", type="primary", use_container_width=True):
             api_key=os.getenv("ANTHROPIC_API_KEY"),
         )
 
-        attempts = 0
-        draft = ""
-        status = ""
-        reason = None
-
-        while attempts < 4:
-            attempts += 1
-
-            # Build the prompt
+        # Define the draft-making function for the loop
+        def make_draft(attempt):
             prompt = (
                 f"You are a support agent triaging a ticket.\n\n"
                 f"Ticket ID: {ticket_id}\n"
@@ -93,33 +87,25 @@ if st.button("Triage This Ticket", type="primary", use_container_width=True):
                 f"- Explains what's happening (or what we're doing)\n"
                 f"- Is between 50-150 words\n"
                 f"- Makes no over-promises\n\n"
+                f"Reply:"
             )
+            return model.invoke(prompt).content.strip()
 
-            if attempts > 1:
-                prompt += f"Your previous draft failed because: {reason}. Please fix it and try again.\n\n"
+        # Use the bounded loop from loop.py
+        loop_result = triage_loop(make_draft, product, max_attempts=4)
 
-            prompt += "Reply:"
+        # Display results
+        attempts = loop_result.get("attempts", 0)
+        status = loop_result.get("status", "escalated")
+        draft = loop_result.get("draft", "")
 
-            # Call the model
-            draft = model.invoke(prompt).content.strip()
-
-            # Verify the draft
-            passed, reason = verify_draft(draft, product)
-
-            if passed:
-                status = "queued"
-                st.write(f"✅ Attempt {attempts}: **PASS** ({reason})")
-                st.write(f"Draft:\n> {draft}")
-                break
-            else:
-                st.write(f"❌ Attempt {attempts}: **FAIL** — {reason}")
-                st.write(f"> {draft[:100]}...")
-
-        if attempts >= 4 and status != "queued":
-            status = "escalated"
+        if status == "queued":
+            st.write(f"✅ Attempt {attempts}: **PASS** (draft approved)")
+            st.write(f"Draft:\n> {draft}")
+        else:
             st.write(
                 f"⚠️ **Escalated after {attempts} attempts** — "
-                f"couldn't generate a passing draft. Needs human review."
+                f"Reason: {loop_result.get('why', 'unknown')}"
             )
 
     # Step 4: Permission gate
